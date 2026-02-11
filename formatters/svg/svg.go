@@ -92,8 +92,8 @@ func (f *Formatter) writeSVG(w io.Writer, style *chroma.Style, tokens []chroma.T
 		f.writeFontStyle(w)
 	}
 
-	fmt.Fprintf(w, "<rect width=\"100%%\" height=\"100%%\" fill=\"%s\"/>\n", style.Get(chroma.Background).Background.String())
-	fmt.Fprintf(w, "<g font-family=\"%s\" font-size=\"14px\" fill=\"%s\">\n", f.fontFamily, style.Get(chroma.Text).Colour.String())
+	fmt.Fprintf(w, "<rect width=\"100%%\" height=\"100%%\" fill=\"%s\"/>\n", colourString(style.Get(chroma.Background).Background))
+	fmt.Fprintf(w, "<g font-family=\"%s\" font-size=\"14px\" fill=\"%s\">\n", f.fontFamily, colourString(style.Get(chroma.Text).Colour))
 
 	f.writeTokenBackgrounds(w, lines, style)
 
@@ -139,7 +139,7 @@ func (f *Formatter) writeTokenBackgrounds(w io.Writer, lines [][]chroma.Token, s
 			length := len(strings.ReplaceAll(token.String(), `	`, "    "))
 			tokenBackground := style.Get(token.Type).Background
 			if tokenBackground.IsSet() && tokenBackground != style.Get(chroma.Background).Background {
-				fmt.Fprintf(w, "<rect id=\"%s\" x=\"%dch\" y=\"%fem\" width=\"%dch\" height=\"1.2em\" fill=\"%s\" />\n", escapeString(token.String()), lineLength, 1.2*float64(index)+0.25, length, style.Get(token.Type).Background.String())
+				fmt.Fprintf(w, "<rect id=\"%s\" x=\"%dch\" y=\"%fem\" width=\"%dch\" height=\"1.2em\" fill=\"%s\" />\n", escapeString(token.String()), lineLength, 1.2*float64(index)+0.25, length, colourString(style.Get(token.Type).Background))
 			}
 			lineLength += length
 		}
@@ -202,12 +202,21 @@ func (f *Formatter) styleToSVG(style *chroma.Style) map[chroma.TokenType]string 
 	return converted
 }
 
+// colourString returns a hex RGB string for any colour, resolving terminal
+// palette colours to their default RGB values.
+func colourString(c chroma.Colour) string {
+	if c.IsTermColour() {
+		return fmt.Sprintf("#%02x%02x%02x", c.Red(), c.Green(), c.Blue())
+	}
+	return c.String()
+}
+
 // StyleEntryToSVG converts a chroma.StyleEntry to SVG attributes.
 func StyleEntryToSVG(e chroma.StyleEntry) string {
 	var styles []string
 
 	if e.Colour.IsSet() {
-		styles = append(styles, "fill=\""+e.Colour.String()+"\"")
+		styles = append(styles, "fill=\""+colourString(e.Colour)+"\"")
 	}
 	if e.Bold == chroma.Yes {
 		styles = append(styles, "font-weight=\"bold\"")

@@ -1,0 +1,51 @@
+<style name="term">
+  <!-- Terminal-adaptive theme using term-N colours.
+       Output adapts to the user's terminal palette, so switching
+       terminal themes (e.g. light/dark) changes the displayed colours. -->
+  <entry type="Background" style="term-7"/>
+  <entry type="Error" style="term-1 bold"/>
+  <entry type="Comment" style="term-15 italic"/>
+  <entry type="CommentPreproc" style="term-14"/>
+  <entry type="CommentPreprocFile" style="term-14"/>
+  <entry type="CommentSpecial" style="term-15 bold italic"/>
+  <entry type="Keyword" style="term-13"/>
+  <entry type="KeywordConstant" style="term-12"/>
+  <entry type="KeywordDeclaration" style="term-13"/>
+  <entry type="KeywordNamespace" style="term-13"/>
+  <entry type="KeywordType" style="term-14"/>
+  <entry type="Operator" style="term-6"/>
+  <entry type="OperatorWord" style="term-13"/>
+  <entry type="Punctuation" style="term-7"/>
+  <entry type="Name" style="term-7"/>
+  <entry type="NameBuiltin" style="term-5"/>
+  <entry type="NameBuiltinPseudo" style="term-5 italic"/>
+  <entry type="NameClass" style="term-10 bold"/>
+  <entry type="NameConstant" style="term-11"/>
+  <entry type="NameDecorator" style="term-3"/>
+  <entry type="NameEntity" style="term-11"/>
+  <entry type="NameException" style="term-9 bold"/>
+  <entry type="NameFunction" style="term-5 bold"/>
+  <entry type="NameLabel" style="term-6"/>
+  <entry type="NameNamespace" style="term-14"/>
+  <entry type="NameProperty" style="term-6"/>
+  <entry type="NameTag" style="term-13"/>
+  <entry type="NameVariable" style="term-6"/>
+  <entry type="NameAttribute" style="term-11"/>
+  <entry type="Literal" style="term-12"/>
+  <entry type="LiteralString" style="term-4"/>
+  <entry type="LiteralStringDoc" style="term-15 italic"/>
+  <entry type="LiteralStringEscape" style="term-9"/>
+  <entry type="LiteralStringInterpol" style="term-5"/>
+  <entry type="LiteralStringRegex" style="term-9"/>
+  <entry type="LiteralNumber" style="term-12"/>
+  <entry type="GenericDeleted" style="term-1"/>
+  <entry type="GenericInserted" style="term-2"/>
+  <entry type="GenericError" style="term-1"/>
+  <entry type="GenericHeading" style="term-4 bold"/>
+  <entry type="GenericSubheading" style="term-13 bold"/>
+  <entry type="GenericEmph" style="italic"/>
+  <entry type="GenericStrong" style="bold"/>
+  <entry type="GenericOutput" style="term-15"/>
+  <entry type="GenericPrompt" style="term-6 bold"/>
+  <entry type="GenericTraceback" style="term-1"/>
+</style>

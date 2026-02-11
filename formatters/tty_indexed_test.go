@@ -34,3 +34,106 @@ func TestNoneColour(t *testing.T) {
 	// 178 color ref: https://jonasjacek.github.io/colors/
 	assert.Equal(t, "\033[38;5;178mWORD\033[0m", stringBuilder.String())
 }
+
+func TestTermColourTrueColourFormatter(t *testing.T) {
+	style, err := chroma.NewStyle("test", chroma.StyleEntries{
+		chroma.Keyword: "term-4 bold",
+	})
+	assert.NoError(t, err)
+
+	var buf strings.Builder
+	err = TTY16m.Format(&buf, style, chroma.Literator(chroma.Token{
+		Type:  chroma.Keyword,
+		Value: "if",
+	}))
+	assert.NoError(t, err)
+
+	// Should use indexed escape code \033[38;5;4m not truecolour RGB
+	assert.Contains(t, buf.String(), "\033[38;5;4m")
+	assert.NotContains(t, buf.String(), "\033[38;2;")
+}
+
+func TestTermColourTrueColourFormatterBackground(t *testing.T) {
+	style, err := chroma.NewStyle("test", chroma.StyleEntries{
+		chroma.Keyword: "term-2 bg:term-0",
+	})
+	assert.NoError(t, err)
+
+	var buf strings.Builder
+	err = TTY16m.Format(&buf, style, chroma.Literator(chroma.Token{
+		Type:  chroma.Keyword,
+		Value: "if",
+	}))
+	assert.NoError(t, err)
+
+	assert.Contains(t, buf.String(), "\033[38;5;2m")
+	assert.Contains(t, buf.String(), "\033[48;5;0m")
+}
+
+func TestTermColour256Formatter(t *testing.T) {
+	style, err := chroma.NewStyle("test", chroma.StyleEntries{
+		chroma.Keyword: "term-4",
+	})
+	assert.NoError(t, err)
+
+	var buf strings.Builder
+	err = TTY256.Format(&buf, style, chroma.Literator(chroma.Token{
+		Type:  chroma.Keyword,
+		Value: "if",
+	}))
+	assert.NoError(t, err)
+
+	// Index 4 should emit \033[34m (standard colour)
+	assert.Contains(t, buf.String(), "\033[34m")
+}
+
+func TestTermColour16Formatter(t *testing.T) {
+	style, err := chroma.NewStyle("test", chroma.StyleEntries{
+		chroma.Keyword: "term-4",
+	})
+	assert.NoError(t, err)
+
+	var buf strings.Builder
+	err = TTY16.Format(&buf, style, chroma.Literator(chroma.Token{
+		Type:  chroma.Keyword,
+		Value: "if",
+	}))
+	assert.NoError(t, err)
+
+	// Index 4 should use \033[34m for foreground
+	assert.Contains(t, buf.String(), "\033[34m")
+}
+
+func TestTermColour16FormatterBright(t *testing.T) {
+	style, err := chroma.NewStyle("test", chroma.StyleEntries{
+		chroma.Keyword: "term-12",
+	})
+	assert.NoError(t, err)
+
+	var buf strings.Builder
+	err = TTY16.Format(&buf, style, chroma.Literator(chroma.Token{
+		Type:  chroma.Keyword,
+		Value: "if",
+	}))
+	assert.NoError(t, err)
+
+	// Index 12 (bright blue) uses \033[94m
+	assert.Contains(t, buf.String(), "\033[94m")
+}
+
+func TestTermColourHighIndex(t *testing.T) {
+	style, err := chroma.NewStyle("test", chroma.StyleEntries{
+		chroma.Keyword: "term-200",
+	})
+	assert.NoError(t, err)
+
+	var buf strings.Builder
+	err = TTY256.Format(&buf, style, chroma.Literator(chroma.Token{
+		Type:  chroma.Keyword,
+		Value: "if",
+	}))
+	assert.NoError(t, err)
+
+	// Index >= 16 should use \033[38;5;Nm
+	assert.Contains(t, buf.String(), "\033[38;5;200m")
+}

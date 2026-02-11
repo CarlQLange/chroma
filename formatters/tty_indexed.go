@@ -1,6 +1,7 @@
 package formatters
 
 import (
+	"fmt"
 	"io"
 	"math"
 
@@ -191,12 +192,42 @@ func entryToEscapeSequence(table *ttyTable, entry chroma.StyleEntry) string {
 		out += "\033[3m"
 	}
 	if entry.Colour.IsSet() {
-		out += table.foreground[findClosest(table, entry.Colour)]
+		if entry.Colour.IsTermColour() {
+			out += termIndexToForeground(entry.Colour.TermIndex())
+		} else {
+			out += table.foreground[findClosest(table, entry.Colour)]
+		}
 	}
 	if entry.Background.IsSet() {
-		out += table.background[findClosest(table, entry.Background)]
+		if entry.Background.IsTermColour() {
+			out += termIndexToBackground(entry.Background.TermIndex())
+		} else {
+			out += table.background[findClosest(table, entry.Background)]
+		}
 	}
 	return out
+}
+
+func termIndexToForeground(index uint8) string {
+	switch {
+	case index < 8:
+		return fmt.Sprintf("\033[%dm", 30+index)
+	case index < 16:
+		return fmt.Sprintf("\033[%dm", 90+index-8)
+	default:
+		return fmt.Sprintf("\033[38;5;%dm", index)
+	}
+}
+
+func termIndexToBackground(index uint8) string {
+	switch {
+	case index < 8:
+		return fmt.Sprintf("\033[%dm", 40+index)
+	case index < 16:
+		return fmt.Sprintf("\033[%dm", 100+index-8)
+	default:
+		return fmt.Sprintf("\033[48;5;%dm", index)
+	}
 }
 
 func findClosest(table *ttyTable, seeking chroma.Colour) chroma.Colour {

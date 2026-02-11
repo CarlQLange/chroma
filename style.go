@@ -458,15 +458,30 @@ func ParseStyleEntry(entry string) (StyleEntry, error) { // nolint: gocyclo
 			out.NoInherit = true
 		case part == "bg:":
 			out.Background = 0
+		case strings.HasPrefix(part, "bg:term-"):
+			out.Background = ParseColour(part[3:])
+			if !out.Background.IsSet() {
+				return StyleEntry{}, fmt.Errorf("invalid background colour %q", part)
+			}
 		case strings.HasPrefix(part, "bg:#"):
 			out.Background = ParseColour(part[3:])
 			if !out.Background.IsSet() {
 				return StyleEntry{}, fmt.Errorf("invalid background colour %q", part)
 			}
+		case strings.HasPrefix(part, "border:term-"):
+			out.Border = ParseColour(part[7:])
+			if !out.Border.IsSet() {
+				return StyleEntry{}, fmt.Errorf("invalid border colour %q", part)
+			}
 		case strings.HasPrefix(part, "border:#"):
 			out.Border = ParseColour(part[7:])
 			if !out.Border.IsSet() {
 				return StyleEntry{}, fmt.Errorf("invalid border colour %q", part)
+			}
+		case strings.HasPrefix(part, "term-"):
+			out.Colour = ParseColour(part)
+			if !out.Colour.IsSet() {
+				return StyleEntry{}, fmt.Errorf("invalid colour %q", part)
 			}
 		case strings.HasPrefix(part, "#"):
 			out.Colour = ParseColour(part)

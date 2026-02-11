@@ -89,3 +89,110 @@ func assertInDelta(t *testing.T, expected, actual float64) {
 	const delta = 0.01 // used for brightness and hue comparisons
 	assert.True(t, actual > (expected-delta) && actual < (expected+delta))
 }
+
+func TestNewTermColour(t *testing.T) {
+	c := NewTermColour(0)
+	assert.True(t, c.IsSet())
+	assert.True(t, c.IsTermColour())
+	assert.Equal(t, uint8(0), c.TermIndex())
+
+	c = NewTermColour(255)
+	assert.True(t, c.IsSet())
+	assert.True(t, c.IsTermColour())
+	assert.Equal(t, uint8(255), c.TermIndex())
+
+	c = NewTermColour(3)
+	assert.Equal(t, uint8(3), c.TermIndex())
+}
+
+func TestTermColourIsNotTermColour(t *testing.T) {
+	c := ParseColour("#ff0000")
+	assert.False(t, c.IsTermColour())
+
+	c = Colour(0)
+	assert.False(t, c.IsTermColour())
+}
+
+func TestTermColourPaletteRGB(t *testing.T) {
+	// Index 0 = black
+	c := NewTermColour(0)
+	assert.Equal(t, uint8(0), c.Red())
+	assert.Equal(t, uint8(0), c.Green())
+	assert.Equal(t, uint8(0), c.Blue())
+
+	// Index 1 = red (maroon)
+	c = NewTermColour(1)
+	assert.Equal(t, uint8(0x80), c.Red())
+	assert.Equal(t, uint8(0), c.Green())
+	assert.Equal(t, uint8(0), c.Blue())
+
+	// Index 15 = bright white
+	c = NewTermColour(15)
+	assert.Equal(t, uint8(0xff), c.Red())
+	assert.Equal(t, uint8(0xff), c.Green())
+	assert.Equal(t, uint8(0xff), c.Blue())
+
+	// Index 232 = greyscale first entry (#080808)
+	c = NewTermColour(232)
+	assert.Equal(t, uint8(0x08), c.Red())
+	assert.Equal(t, uint8(0x08), c.Green())
+	assert.Equal(t, uint8(0x08), c.Blue())
+}
+
+func TestTermColourString(t *testing.T) {
+	assert.Equal(t, "term-0", NewTermColour(0).String())
+	assert.Equal(t, "term-3", NewTermColour(3).String())
+	assert.Equal(t, "term-255", NewTermColour(255).String())
+}
+
+func TestTermColourGoString(t *testing.T) {
+	assert.Equal(t, "TermColour(0)", NewTermColour(0).GoString())
+	assert.Equal(t, "TermColour(255)", NewTermColour(255).GoString())
+}
+
+func TestParseTermColour(t *testing.T) {
+	c := ParseColour("term-0")
+	assert.True(t, c.IsTermColour())
+	assert.Equal(t, uint8(0), c.TermIndex())
+
+	c = ParseColour("term-3")
+	assert.True(t, c.IsTermColour())
+	assert.Equal(t, uint8(3), c.TermIndex())
+
+	c = ParseColour("term-255")
+	assert.True(t, c.IsTermColour())
+	assert.Equal(t, uint8(255), c.TermIndex())
+
+	// Invalid indices
+	c = ParseColour("term-256")
+	assert.False(t, c.IsSet())
+
+	c = ParseColour("term-")
+	assert.False(t, c.IsSet())
+
+	c = ParseColour("term-abc")
+	assert.False(t, c.IsSet())
+}
+
+func TestParseTermColourRoundTrip(t *testing.T) {
+	for i := 0; i < 256; i++ {
+		original := NewTermColour(uint8(i))
+		parsed := ParseColour(original.String())
+		assert.Equal(t, original, parsed)
+	}
+}
+
+func TestTermColourBrightness(t *testing.T) {
+	c := NewTermColour(15) // white
+	assert.True(t, c.Brightness() > 0.99)
+
+	c = NewTermColour(0) // black
+	assert.True(t, c.Brightness() < 0.01)
+}
+
+func TestTermColourBrightenMaterialisesToRGB(t *testing.T) {
+	c := NewTermColour(1) // red/maroon
+	brightened := c.Brighten(0.5)
+	assert.False(t, brightened.IsTermColour())
+	assert.True(t, brightened.IsSet())
+}

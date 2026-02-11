@@ -64,10 +64,18 @@ func trueColourFormatter(w io.Writer, style *chroma.Style, it chroma.Iterator) e
 			formatting += "\033[3m"
 		}
 		if entry.Colour.IsSet() {
-			formatting += fmt.Sprintf("\033[38;2;%d;%d;%dm", entry.Colour.Red(), entry.Colour.Green(), entry.Colour.Blue())
+			if entry.Colour.IsTermColour() {
+				formatting += fmt.Sprintf("\033[38;5;%dm", entry.Colour.TermIndex())
+			} else {
+				formatting += fmt.Sprintf("\033[38;2;%d;%d;%dm", entry.Colour.Red(), entry.Colour.Green(), entry.Colour.Blue())
+			}
 		}
 		if entry.Background.IsSet() {
-			formatting += fmt.Sprintf("\033[48;2;%d;%d;%dm", entry.Background.Red(), entry.Background.Green(), entry.Background.Blue())
+			if entry.Background.IsTermColour() {
+				formatting += fmt.Sprintf("\033[48;5;%dm", entry.Background.TermIndex())
+			} else {
+				formatting += fmt.Sprintf("\033[48;2;%d;%d;%dm", entry.Background.Red(), entry.Background.Green(), entry.Background.Blue())
+			}
 		}
 
 		writeToken(w, formatting, token.Value)

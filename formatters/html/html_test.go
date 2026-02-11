@@ -15,6 +15,37 @@ import (
 	"github.com/alecthomas/chroma/v2/styles"
 )
 
+func TestTermColourToCSS(t *testing.T) {
+	// term-4 (blue) should produce valid hex CSS, not "term-4"
+	entry := chroma.StyleEntry{Colour: chroma.NewTermColour(4)}
+	css := StyleEntryToCSS(entry)
+	assert.Contains(t, css, "color: #000080")
+	assert.NotContains(t, css, "term-")
+}
+
+func TestTermColourBackgroundToCSS(t *testing.T) {
+	entry := chroma.StyleEntry{Background: chroma.NewTermColour(15)}
+	css := StyleEntryToCSS(entry)
+	assert.Contains(t, css, "background-color: #ffffff")
+	assert.NotContains(t, css, "term-")
+}
+
+func TestTermColourHTMLOutput(t *testing.T) {
+	style, err := chroma.NewStyle("test", chroma.StyleEntries{
+		chroma.Keyword: "term-4 bold",
+	})
+	assert.NoError(t, err)
+
+	formatter := New()
+	var buf bytes.Buffer
+	it := chroma.Literator(chroma.Token{Type: chroma.Keyword, Value: "if"})
+	err = formatter.Format(&buf, style, it)
+	assert.NoError(t, err)
+
+	// Output should contain valid hex colour, not "term-4"
+	assert.NotContains(t, buf.String(), "term-")
+}
+
 func TestCompressStyle(t *testing.T) {
 	style := "color: #888888; background-color: #faffff"
 	actual := compressStyle(style)

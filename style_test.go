@@ -103,6 +103,62 @@ func TestStyleBuilderTransform(t *testing.T) {
 	assert.Equal(t, "#ff3300", deriv.Get(NameVariableGlobal).Colour.String())
 }
 
+func TestParseStyleEntryTermColour(t *testing.T) {
+	entry, err := ParseStyleEntry("term-3 bg:term-0")
+	assert.NoError(t, err)
+	assert.True(t, entry.Colour.IsTermColour())
+	assert.Equal(t, uint8(3), entry.Colour.TermIndex())
+	assert.True(t, entry.Background.IsTermColour())
+	assert.Equal(t, uint8(0), entry.Background.TermIndex())
+}
+
+func TestParseStyleEntryTermColourBorder(t *testing.T) {
+	entry, err := ParseStyleEntry("border:term-15")
+	assert.NoError(t, err)
+	assert.True(t, entry.Border.IsTermColour())
+	assert.Equal(t, uint8(15), entry.Border.TermIndex())
+}
+
+func TestParseStyleEntryTermColourBold(t *testing.T) {
+	entry, err := ParseStyleEntry("term-4 bold")
+	assert.NoError(t, err)
+	assert.True(t, entry.Colour.IsTermColour())
+	assert.Equal(t, uint8(4), entry.Colour.TermIndex())
+	assert.Equal(t, Yes, entry.Bold)
+}
+
+func TestParseStyleEntryTermColourRoundTrip(t *testing.T) {
+	original, err := ParseStyleEntry("bold term-4 bg:term-0")
+	assert.NoError(t, err)
+	s := original.String()
+	roundTripped, err := ParseStyleEntry(s)
+	assert.NoError(t, err)
+	assert.Equal(t, original, roundTripped)
+}
+
+func TestParseStyleEntryTermColourInvalid(t *testing.T) {
+	_, err := ParseStyleEntry("term-256")
+	assert.Error(t, err)
+
+	_, err = ParseStyleEntry("bg:term-999")
+	assert.Error(t, err)
+}
+
+func TestStyleTermColourXMLRoundTrip(t *testing.T) {
+	expected, err := NewStyle("test", StyleEntries{
+		Keyword: "term-4 bold",
+		String:  "term-2",
+		Comment: "term-8 italic",
+	})
+	assert.NoError(t, err)
+	data, err := xml.MarshalIndent(expected, "", "  ")
+	assert.NoError(t, err)
+	actual := &Style{}
+	err = xml.Unmarshal(data, actual)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
+}
+
 func TestStyleMarshaller(t *testing.T) {
 	expected, err := NewStyle("test", StyleEntries{
 		Whitespace: "bg:#ffffff",

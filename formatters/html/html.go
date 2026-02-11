@@ -548,14 +548,23 @@ func (f *Formatter) styleToCSS(style *chroma.Style) map[chroma.TokenType]string 
 	return classes
 }
 
+// colourToCSS returns a CSS-safe colour string. Terminal palette colours
+// are resolved to hex RGB via their default palette values.
+func colourToCSS(c chroma.Colour) string {
+	if c.IsTermColour() {
+		return fmt.Sprintf("#%02x%02x%02x", c.Red(), c.Green(), c.Blue())
+	}
+	return c.String()
+}
+
 // StyleEntryToCSS converts a chroma.StyleEntry to CSS attributes.
 func StyleEntryToCSS(e chroma.StyleEntry) string {
 	styles := []string{}
 	if e.Colour.IsSet() {
-		styles = append(styles, "color: "+e.Colour.String())
+		styles = append(styles, "color: "+colourToCSS(e.Colour))
 	}
 	if e.Background.IsSet() {
-		styles = append(styles, "background-color: "+e.Background.String())
+		styles = append(styles, "background-color: "+colourToCSS(e.Background))
 	}
 	if e.Bold == chroma.Yes {
 		styles = append(styles, "font-weight: bold")
